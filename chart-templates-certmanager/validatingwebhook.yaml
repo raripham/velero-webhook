@@ -1,0 +1,53 @@
+{{- if .Values.backupshook.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ .Values.backupshook.name }}-validation
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ .Values.backupshook.name }}-tls
+webhooks:
+  - name: {{ .Values.backupshook.name }}-validation.{{ .Release.Namespace }}.svc
+    # namespaceSelector:
+    #   matchExpressions:
+    #     - key: kubernetes.io/metadata.name
+    #       operator: In
+    #       values: [ "velero" ]
+    objectSelector:
+      matchLabels:
+        velero-webhook-enabled: "true"
+    rules:
+      - operations: [ "CREATE"]
+        apiGroups: [ "velero.io" ]
+        apiVersions: [ "v1" ]
+        resources: [ "backups" ]
+        # scope: "Namespaced"
+    clientConfig:
+      service:
+        namespace: {{ .Release.Namespace }}
+        name: {{ .Values.backupshook.name }}
+        path: "/validate"
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    timeoutSeconds: 5
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.backupshook.name }}-tls
+spec:
+  secretName: {{ .Values.backupshook.name }}-tls
+  dnsNames:
+  - {{ .Values.backupshook.name }}.{{ .Release.Namespace }}.svc
+  - {{ .Values.backupshook.name }}.{{ .Release.Namespace }}
+  - {{ .Values.backupshook.name }}
+  issuerRef:
+    name: selfsigned-webhook-tls
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-webhook-tls
+spec:
+  selfSigned: {}
+{{- end }}

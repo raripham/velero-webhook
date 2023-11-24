@@ -1,0 +1,35 @@
+{{- if .Values.backupshook.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backupshook.name }}
+  labels:
+    app: {{ .Values.backupshook.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.backupshook.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backupshook.name }}
+    spec:
+      serviceAccountName: {{ .Values.backupshook.name }}
+      containers:
+        - name: {{ .Values.backupshook.name }}
+          image: {{ .Values.backupshook.image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/certs
+              readOnly: true
+      imagePullSecrets:
+        - name: {{ .Values.backupshook.imagePullSecrets }}
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: {{ .Values.backupshook.name }}-tls
+{{- end }}

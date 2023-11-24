@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: velero-webhook
+rules:
+- apiGroups: ["velero.io"]
+  resources: ["backups"]
+  verbs: ["get", "watch", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: velero-webhook
+subjects:
+- kind: ServiceAccount
+  name: velero-webhook
+  namespace: backup
+roleRef:
+  kind: ClusterRole
+  name: velero-webhook
+  apiGroup: rbac.authorization.k8s.io

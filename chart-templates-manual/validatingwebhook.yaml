@@ -1,0 +1,31 @@
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: velero-webhook-validation
+webhooks:
+  - name: velero-webhook-validation.backup.svc
+    # namespaceSelector:
+    #   matchExpressions:
+    #     - key: kubernetes.io/metadata.name
+    #       operator: In
+    #       values: [ "velero" ]
+    objectSelector:
+      matchLabels:
+        velero-webhook-enabled: "true"
+    rules:
+      - operations: [ "CREATE"]
+        apiGroups: [ "velero.io" ]
+        apiVersions: [ "v1" ]
+        resources: [ "backups" ]
+        # scope: "Namespaced"
+    clientConfig:
+      service:
+        namespace: backup
+        name: velero-webhook
+        path: "/validate"
+      caBundle: "${CA_PEM_B64}"
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    timeoutSeconds: 5
+---

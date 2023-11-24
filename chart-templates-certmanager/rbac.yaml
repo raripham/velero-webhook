@@ -1,0 +1,23 @@
+{{- if .Values.backupshook.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.backupshook.name }}
+rules:
+- apiGroups: ["velero.io"]
+  resources: ["backups"]
+  verbs: ["get", "watch", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.backupshook.name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.backupshook.name }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Values.backupshook.name }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

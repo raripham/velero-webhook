@@ -1,0 +1,12 @@
+{{- if .Values.backupshook.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.backupshook.name }}
+spec:
+  selector:
+    app: {{ .Values.backupshook.name }}
+  ports:
+    - port: 443
+      targetPort: 8443
+{{- end }}
